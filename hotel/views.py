@@ -1,3 +1,10 @@
-from django.shortcuts import render
+from rest_framework import generics
+from .models import Hotel
+from .serializers import HotelSerializer
 
-# Create your views here.
+class HotelDetailAPIView(generics.RetrieveAPIView):
+    queryset = Hotel.objects.all()
+    serializer_class = HotelSerializer
+
+    def get_object(self):
+        return Hotel.objects.first()
