@@ -1,6 +1,8 @@
-from rest_framework import generics
+from rest_framework import generics, permissions, status
 from .models import Hotel, Room, Reservation
-from .serializers import HotelSerializer,RoomSerializer, ReservationSerializer
+from .serializers import HotelSerializer,RoomSerializer, ReservationSerializer, ReservationStatusSerializer
+from .services import ReservationService  
+
 
 class HotelDetailAPIView(generics.RetrieveAPIView):
     queryset = Hotel.objects.all()
@@ -46,3 +48,15 @@ class ReservationCreateAPIView(generics.CreateAPIView):
 
     def get_queryset(self):
         return Reservation.objects.filter(user=self.request.user)
+    
+class CancelReservationAPIView(generics.UpdateAPIView):
+    queryset = Reservation.objects.all()
+    serializer_class = ReservationStatusSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Reservation.objects.filter(user=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        return ReservationService.cancel_reservation_and_respond(request, instance)

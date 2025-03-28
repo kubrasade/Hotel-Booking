@@ -70,3 +70,11 @@ class ReservationSerializer(serializers.ModelSerializer):
         validated_data["total_price"] = total_price
         validated_data["status"] = ReservationStatus.PENDING
         return super().create(validated_data)
+    
+class ReservationStatusSerializer(serializers.ModelSerializer):
+    cancellation_reason= serializers.CharField(required= False, allow_blank=True)
+
+    class Meta:
+        model = Reservation
+        fields = ["id", "status", "cancellation_reason"]
+        read_only_fields = ["id", "status"]

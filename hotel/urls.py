@@ -6,7 +6,8 @@ from .views import (
     RoomCreateAPIView,
     ReservationListAPIView,
     ReservationDetailAPIView,
-    ReservationCreateAPIView
+    ReservationCreateAPIView,
+    CancelReservationAPIView
 )
 
 urlpatterns = [
@@ -17,4 +18,5 @@ urlpatterns = [
     path("reservations/", ReservationListAPIView.as_view(), name="reservation-list"),
     path("reservations/<int:pk>/", ReservationDetailAPIView.as_view(), name="reservation-detail"),
     path("reservations/create/", ReservationCreateAPIView.as_view(), name="reservation-create"),
+    path("reservations/<int:pk>/cancel/", CancelReservationAPIView.as_view(), name="cancel-reservation"), 
     ]

@@ -34,6 +34,7 @@ class Reservation(BaseModel):
     check_out = models.DateField()
     total_price = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     status = models.PositiveSmallIntegerField(choices=ReservationStatus.choices, default=ReservationStatus.PENDING)
+    cancellation_reason = models.TextField(null=True, blank=True)
 
     class Meta: 
         verbose_name= "Reservation"
