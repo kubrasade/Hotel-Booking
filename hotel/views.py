@@ -1,6 +1,6 @@
 from rest_framework import generics
-from .models import Hotel, Room
-from .serializers import HotelSerializer,RoomSerializer
+from .models import Hotel, Room, Reservation
+from .serializers import HotelSerializer,RoomSerializer, ReservationSerializer
 
 class HotelDetailAPIView(generics.RetrieveAPIView):
     queryset = Hotel.objects.all()
@@ -26,3 +26,23 @@ class RoomCreateAPIView(generics.CreateAPIView):
     def perform_create(self, serializer):
         hotel = Hotel.objects.first()
         serializer.save(hotel=hotel)
+
+class ReservationListAPIView(generics.ListAPIView):
+    serializer_class = ReservationSerializer
+
+    def get_queryset(self):
+        return Reservation.objects.filter(user=self.request.user).order_by("-created_at")
+
+
+class ReservationDetailAPIView(generics.RetrieveAPIView):
+    serializer_class = ReservationSerializer
+
+    def get_queryset(self):
+        return Reservation.objects.filter(user=self.request.user)
+
+
+class ReservationCreateAPIView(generics.CreateAPIView):
+    serializer_class = ReservationSerializer
+
+    def get_queryset(self):
+        return Reservation.objects.filter(user=self.request.user)
