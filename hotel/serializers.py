@@ -59,8 +59,22 @@ class ReservationSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created_at", "updated_at", "total_price", "status")
 
     def validate(self, data):
-        if data["check_in"] >= data["check_out"]:
+        check_in= data["check_in"]
+        check_out= data["check_out"]
+        room= data.get("room")
+
+        if check_in >= check_out:
             raise serializers.ValidationError("Your check-out date must be after your check-in date.")
+        
+        overlapping= Reservation.objects.filter(
+            room= room,
+            status__in= [ReservationStatus.PENDING, ReservationStatus.CONFIRMED],
+            check_in__lt=check_out,
+            check_out__gt=check_in,
+        ).exists()
+        
+        if overlapping:
+            raise serializers.ValidationError("This room is already booked for the selected dates.")
         return data
 
     def create(self, validated_data):
