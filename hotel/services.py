@@ -2,9 +2,6 @@ from django.utils.timezone import now
 from rest_framework.exceptions import ValidationError
 from .models import Reservation
 from .enums import ReservationStatus
-from .serializers import ReservationStatusSerializer
-from rest_framework import status
-from rest_framework.response import Response
 
 
 class ReservationService:
@@ -24,9 +21,3 @@ class ReservationService:
             reservation.cancellation_reason = reason
         reservation.save()
         return reservation
-    
-    @staticmethod
-    def cancel_reservation_and_respond(request, reservation: Reservation) -> Response:
-        updated = ReservationService.cancel_reservation(reservation)
-        serializer = ReservationStatusSerializer(updated, context={"request": request})
-        return Response(serializer.data, status=status.HTTP_200_OK)

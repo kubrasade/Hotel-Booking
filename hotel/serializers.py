@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from .models import Hotel, Room, Reservation
 from .enums import ReservationStatus
+from .services import ReservationService
+from rest_framework.exceptions import ValidationError
+
 
 class HotelSerializer(serializers.ModelSerializer):
     class Meta:
@@ -37,7 +40,6 @@ class RoomSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "created_at", "updated_at")
 
 class ReservationSerializer(serializers.ModelSerializer):
-    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     room_name = serializers.CharField(source="room.name", read_only=True)
     hotel_name = serializers.CharField(source="room.hotel.name", read_only=True)
 
@@ -45,7 +47,10 @@ class ReservationSerializer(serializers.ModelSerializer):
         model = Reservation
         fields = [
             "id",
-            "user",
+            "name",
+            "surname",
+            "email",
+            "phone",
             "room",
             "room_name",
             "hotel_name",
@@ -55,8 +60,9 @@ class ReservationSerializer(serializers.ModelSerializer):
             "status",
             "created_at",
             "updated_at",
+            "cancel_code",
         ]
-        read_only_fields = ("id", "created_at", "updated_at", "total_price", "status")
+        read_only_fields = ("id", "created_at", "updated_at", "total_price", "status", "cancel_code")
 
     def validate(self, data):
         check_in= data["check_in"]
@@ -92,3 +98,29 @@ class ReservationStatusSerializer(serializers.ModelSerializer):
         model = Reservation
         fields = ["id", "status", "cancellation_reason"]
         read_only_fields = ["id", "status"]
+
+class CancelReservationInputSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    cancel_code = serializers.CharField(max_length=10)
+    cancellation_reason = serializers.CharField(required=False, allow_blank=True)
+
+    def validate(self, data):
+        email = data["email"]
+        cancel_code = data["cancel_code"]
+
+        try:
+            reservation = Reservation.objects.get(email=email, cancel_code=cancel_code)
+        except Reservation.DoesNotExist:
+            raise ValidationError("E-mail or cancellation code is incorrect.")
+
+        if reservation.status == ReservationStatus.CANCELLED:
+            raise ValidationError("This reservation is already cancelled.")
+
+        self.context["reservation"] = reservation
+        return data
+
+    def save(self, **kwargs):
+        reservation = self.context["reservation"]
+        reason = self.validated_data.get("cancellation_reason")
+
+        return ReservationService.cancel_reservation(reservation, reason)
