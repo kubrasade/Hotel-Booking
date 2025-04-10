@@ -7,7 +7,8 @@ from .views import (
     ReservationListAPIView,
     ReservationDetailAPIView,
     ReservationCreateAPIView,
-    CancelReservationAPIView
+    CancelReservationAPIView,
+    monthly_availability
 )
 
 urlpatterns = [
@@ -19,4 +20,6 @@ urlpatterns = [
     path("reservations/<int:pk>/", ReservationDetailAPIView.as_view(), name="reservation-detail"),
     path("reservations/create/", ReservationCreateAPIView.as_view(), name="reservation-create"),
     path("reservations/cancel/", CancelReservationAPIView.as_view(), name="cancel-reservation"), 
+    path('availability/monthly/', monthly_availability, name='monthly-availability'),
+
     ]

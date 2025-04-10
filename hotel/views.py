@@ -7,6 +7,20 @@ from .serializers import (
     ReservationStatusSerializer,
     CancelReservationInputSerializer)
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from .services import ReservationService
+
+@api_view(['GET'])
+def monthly_availability(request):
+    try:
+        room_id = int(request.GET.get("room_id"))
+        year = int(request.GET.get("year"))
+        month = int(request.GET.get("month"))
+    except (TypeError, ValueError):
+        return Response({"error": "Missing or invalid query parameters."}, status=400)
+
+    data = ReservationService.get_monthly_availability(room_id, year, month)
+    return Response(data)
 
 class HotelDetailAPIView(generics.RetrieveAPIView):
     serializer_class = HotelSerializer
